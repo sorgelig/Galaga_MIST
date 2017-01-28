@@ -15,10 +15,7 @@ architecture prom of rgb is
 		X"F6",X"07",X"3F",X"27",X"2F",X"C7",X"F8",X"ED",X"16",X"38",X"21",X"D8",X"C4",X"C0",X"A0",X"00",
 		X"F6",X"07",X"3F",X"27",X"00",X"C7",X"F8",X"E8",X"00",X"38",X"00",X"D8",X"C5",X"C0",X"00",X"00");
 begin
-process(clk)
-begin
-	if rising_edge(clk) then
-		data <= rom_data(to_integer(unsigned(addr)));
-	end if;
-end process;
+
+data <= rom_data(to_integer(unsigned(addr)));
+
 end architecture;

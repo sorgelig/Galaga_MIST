@@ -10,63 +10,73 @@ module keyboard
 	output reg[7:0] joystick
 );
 
-reg        pressed;
-reg        e0;
-wire [7:0] keyb_data;
-wire       keyb_valid;
+reg [11:0] shift_reg = 12'hFFF;
+wire[11:0] kdata = {ps2_kbd_data,shift_reg[11:1]};
+wire [7:0] kcode = kdata[9:2];
+reg        release_btn = 0;
 
-// PS/2 interface
-ps2_intf ps2(
-	clk,
-	!reset,
-		
-	ps2_kbd_clk,
-	ps2_kbd_data,
+reg  [7:0] code;
+reg        input_strobe = 0;
 
-	// Byte-wide data interface - only valid for one clock
-	// so must be latched externally if required
-	keyb_data,
-	keyb_valid
-);
+always @(negedge clk) begin
+	reg old_reset = 0;
 
+	old_reset <= reset;
 
+	if(~old_reset & reset)begin
+		joystick <= 0;
+	end
 
+	if(input_strobe) begin
+		case(code)
+			'h16: joystick[1] <= ~release_btn; // 1
+			'h1E: joystick[2] <= ~release_btn; // 2
 
-always @(posedge reset or posedge clk) begin
-	
-	if(reset) begin
-		pressed <= 1'b0;
-		e0 <= 1'b0;
+			'h75: joystick[4] <= ~release_btn; // arrow up
+			'h72: joystick[5] <= ~release_btn; // arrow down
+			'h6B: joystick[6] <= ~release_btn; // arrow left
+			'h74: joystick[7] <= ~release_btn; // arrow right
 
-		joystick <= 8'd0;
+			'h29: joystick[0] <= ~release_btn; // Space
+			'h11: joystick[1] <= ~release_btn; // Left Alt
+			'h0d: joystick[2] <= ~release_btn; // Tab
+			'h76: joystick[3] <= ~release_btn; // Escape
+		endcase
+	end
+end
+
+always @(posedge clk) begin
+	reg [3:0] prev_clk  = 0;
+	reg       old_reset = 0;
+	reg       action = 0;
+
+	old_reset <= reset;
+	input_strobe <= 0;
+
+	if(~old_reset & reset)begin
+		prev_clk  <= 0;
+		shift_reg <= 12'hFFF;
 	end else begin
-		if (keyb_valid) begin
-			if (keyb_data == 8'HE0)
-				e0 <=1'b1;
-			else if (keyb_data == 8'HF0)
-				pressed <= 1'b0;
-			else begin
-				case({e0, keyb_data})
-					9'H016: joystick[1] <= pressed; // 1
-					9'H01E: joystick[2] <= pressed; // 2
-
-					9'H175: joystick[4] <= pressed; // arrow up
-					9'H172: joystick[5] <= pressed; // arrow down
-					9'H16B: joystick[6] <= pressed; // arrow left
-					9'H174: joystick[7] <= pressed; // arrow right
-					
-					9'H029: joystick[0] <= pressed; // Space
-					9'H011: joystick[1] <= pressed; // Left Alt
-					9'H00d: joystick[2] <= pressed; // Tab
-					9'H076: joystick[3] <= pressed; // Escape
-
-				endcase;
-
-				pressed <= 1'b1;
-				e0 <= 1'b0;
-         end 
-      end 
-   end 
-end	
-
+		prev_clk <= {ps2_kbd_clk,prev_clk[3:1]};
+		if(prev_clk == 1) begin
+			if (kdata[11] & ^kdata[10:2] & ~kdata[1] & kdata[0]) begin
+				shift_reg <= 12'hFFF;
+				if (kcode == 8'he0) ;
+				// Extended key code follows
+				else if (kcode == 8'hf0)
+					// Release code follows
+					action <= 1;
+				else begin
+					// Cancel extended/release flags for next time
+					action <= 0;
+					release_btn <= action;
+					code <= kcode;
+					input_strobe <= 1;
+				end
+			end else begin
+				shift_reg <= kdata;
+			end
+		end
+	end
+end
 endmodule

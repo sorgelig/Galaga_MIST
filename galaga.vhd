@@ -99,9 +99,8 @@ port(
  video_b        : out std_logic_vector(1 downto 0);
  video_hs       : out std_logic;
  video_vs       : out std_logic;
- video_clk      : out std_logic;
- video_csync    : out std_logic;
  video_blankn   : out std_logic;
+ pix_ce         : out std_logic;
  audio          : out std_logic_vector(9 downto 0);
 
  b_test         : in std_logic;
@@ -283,6 +282,7 @@ architecture struct of galaga is
 
 begin
 
+pix_ce <= ena_vidgen;
 clock_18n <= not clock_18;
 reset_n   <= not reset;
 
@@ -547,7 +547,7 @@ port  map(
 process (clock_18)
 	subtype speed is integer range -3 to 3;
 	type speed_array is array(0 to 7) of speed; 
-	variable speeds : speed_array := ( -1, -2, -3, 0, 3, 2, 1, 0 ); 
+	constant speeds : speed_array := ( -1, -2, -3, 0, 3, 2, 1, 0 ); 
 begin
  if rising_edge(clock_18) then 
 
@@ -581,19 +581,20 @@ end process;
 
 rgb_palette_addr <= ('0' & spbits_rd) when bgbits = "1111" else ('1' & bgbits);
 
-process (clock_18, rgb_palette_addr)
-begin
- if rising_edge(clock_18)then
-  if rgb_palette_addr(3 downto 0) = "1111" then
-		video_r <= star_color(1 downto 0) & "0";
-		video_g <= star_color(3 downto 2) & "0";
-		video_b <= star_color(5 downto 4);		
-	else
-		video_r <= rgb_palette_do(2 downto 0);
-		video_g <= rgb_palette_do(5 downto 3);
-		video_b <= rgb_palette_do(7 downto 6);	
+process (clock_18) begin
+	if rising_edge(clock_18) then
+		if ena_vidgen = '1' then
+			if rgb_palette_addr(3 downto 0) = "1111" then
+				video_r <= star_color(1 downto 0) & star_color(1);
+				video_g <= star_color(3 downto 2) & star_color(3);
+				video_b <= star_color(5 downto 4);
+			else
+				video_r <= rgb_palette_do(2 downto 0);
+				video_g <= rgb_palette_do(5 downto 3);
+				video_b <= rgb_palette_do(7 downto 6);
+			end if;
+		end if;
 	end if;
- end if;
 end process;
 
 
@@ -836,13 +837,15 @@ cs06XX_do <= cs06XX_di when mux_addr(8)= '0' else cs06XX_control;
 
 process (clock_18, nmion_n)
 begin
- if nmion_n = '1' then
- elsif rising_edge(clock_18) and ena_vidgen = '1' then
-		if hcnt = "100000000" then
-			if vcnt = "001000000" or vcnt = "011000000" then cpu3_nmi_n <= '0'; end if;
-			if vcnt = "001000001" or vcnt = "011000001" then cpu3_nmi_n <= '1'; end if;
+	if nmion_n = '1' then
+	elsif rising_edge(clock_18) then
+		if ena_vidgen = '1' then
+			if hcnt = "100000000" then
+				if vcnt = "001000000" or vcnt = "011000000" then cpu3_nmi_n <= '0'; end if;
+				if vcnt = "001000001" or vcnt = "011000001" then cpu3_nmi_n <= '1'; end if;
+			end if;
 		end if;
- end if;
+	end if;
 end process;
 
 with cpu1_addr(15 downto 11) select
@@ -892,8 +895,7 @@ enable  => ena_vidgen,
 hcnt    => hcnt,
 vcnt    => vcnt,
 hsync   => video_hs,
-vsync   => video_Vs,
-csync   => video_csync,
+vsync   => video_vs,
 blankn  => video_blankn
 );
 
