@@ -92,7 +92,7 @@ architecture struct of galaga_mist is
  
 
 	constant CONF_STR : string := 
-		"Galaga;;T1,Coin;T2,Player 1 Start;T3,Player 2 Start;O4,Scanlines,OFF,ON;T5,Reset;O6,Service,OFF,ON;O7,TestMode,OFF,ON;";
+		"Galaga;;T1,Add Coin       (ESC);T2,Player 1 Start (1);T3,Player 2 Start (2);O89,Scanlines,OFF,25%,50%,75%;T5,Reset;";
 
 	function to_slv(s: string) return std_logic_vector is
 		constant ss: string(1 to s'length) := s;
@@ -171,7 +171,7 @@ vmixer : video_mixer
 		SPI_SS3 => SPI_SS3,
 		SPI_DI => SPI_DI,
 
-		scanlines => '0' & status(4),
+		scanlines => status(9 downto 8),
 		scandoubler_disable => scandoubler_disable,
 		ypbpr => ypbpr,
 		ypbpr_full => '1',
@@ -221,16 +221,16 @@ galaga : entity work.galaga
 		pix_ce       => pix_ce,
 
 		audio        => audio,
-		b_test       => status(7),--'1',--no Function at all
-		b_svce       => status(6),--'1',--no Function at all 
+		b_test       => '0', --no Function at all
+		b_svce       => '0', --no Function at all 
 		coin         => kbd_joy0(3) or status(1),
 		start1       => kbd_joy0(1) or status(2),
 		start2       => kbd_joy0(2) or status(3), 
-		left1        => joy0(2) or kbd_joy0(5),
-		right1       => joy0(3) or kbd_joy0(4),
+		left1        => joy0(2) or joy0(1) or kbd_joy0(5) or kbd_joy0(6),
+		right1       => joy0(3) or joy0(0) or kbd_joy0(4) or kbd_joy0(7),
 		fire1        => joy0(4) or kbd_joy0(0),
-		left2        => joy1(2) or kbd_joy0(5),
-		right2       => joy1(3) or kbd_joy0(4),
+		left2        => joy1(2) or joy0(1) or kbd_joy0(5) or kbd_joy0(6),
+		right2       => joy1(3) or joy0(0) or kbd_joy0(4) or kbd_joy0(7),
 		fire2        => joy1(4) or kbd_joy0(0)
 );
 
