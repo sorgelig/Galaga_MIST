@@ -40,7 +40,7 @@ use ieee.numeric_std.all;
 entity galaga_mist is
 port(
 	CLOCK_27  	: in std_logic;
-	LED 			: in std_logic;
+	LED 			: out std_logic;
 	VGA_R     	: out std_logic_vector(5 downto 0);
 	VGA_G     	: out std_logic_vector(5 downto 0);
 	VGA_B     	: out std_logic_vector(5 downto 0);
@@ -49,9 +49,7 @@ port(
 	SPI_SCK 		: in std_logic;
 	SPI_DI 		: in std_logic;
 	SPI_DO 		: out std_logic;
-	SPI_SS2 		: in std_logic;
 	SPI_SS3 		: in std_logic;
-	SPI_SS4 		: in std_logic;
 	CONF_DATA0	: in std_logic;
 	AUDIO_L 		: out std_logic;
 	AUDIO_R 		: out std_logic
@@ -62,36 +60,35 @@ end galaga_mist;
 architecture struct of galaga_mist is
 	signal clock_36  		: std_logic;
 	signal clock_18  		: std_logic;
-	signal clock_11  		: std_logic; 
-	signal pll_locked  		: std_logic;
+	signal pll_locked  	: std_logic;
 	signal r         		: std_logic_vector(2 downto 0);
 	signal g         		: std_logic_vector(2 downto 0);
 	signal b         		: std_logic_vector(1 downto 0);
-	signal hsync 				: std_logic; 
-	signal vsync 				: std_logic;  
-	signal blankn				: std_logic;  
-	signal pix_ce				: std_logic;  
+	signal hsync 			: std_logic; 
+	signal vsync 			: std_logic;  
+	signal blankn			: std_logic;  
+	signal pix_ce			: std_logic;  
 	signal audio_pwm 		: std_logic; 
 	signal audio        	: std_logic_vector(9 downto 0);
 	signal reset        	: std_logic;
 
 	-- User IO
-	signal buttons    		: std_logic_vector(1 downto 0);
-	signal joy0       		: std_logic_vector(7 downto 0);
-	signal joy1       		: std_logic_vector(7 downto 0);
-	signal status     		: std_logic_vector(31 downto 0);
+	signal buttons    	: std_logic_vector(1 downto 0);
+	signal joy0       	: std_logic_vector(7 downto 0);
+	signal joy1       	: std_logic_vector(7 downto 0);
+	signal status     	: std_logic_vector(31 downto 0);
 	signal scandoubler_disable : std_logic;  
-	signal ypbpr          : std_logic;  
+	signal ypbpr         : std_logic;  
 
 	signal kbd_joy0 		: std_logic_vector(7 downto 0);
 	signal kbd_joy1 		: std_logic_vector(7 downto 0);  
-	signal ps2Clk     		: std_logic;
-	signal ps2Data    		: std_logic;
+	signal ps2Clk     	: std_logic;
+	signal ps2Data    	: std_logic;
 	signal ps2_scancode 	: std_logic_vector(7 downto 0);
 
-	signal VGA_R_O  : std_logic_vector(7 downto 0);
-	signal VGA_G_O  : std_logic_vector(7 downto 0);
-	signal VGA_B_O  : std_logic_vector(7 downto 0);
+	signal VGA_R_O  		: std_logic_vector(7 downto 0);
+	signal VGA_G_O  		: std_logic_vector(7 downto 0);
+	signal VGA_B_O  		: std_logic_vector(7 downto 0);
  
 
 	constant CONF_STR : string := 
@@ -162,7 +159,6 @@ pll : entity work.pll
 		inclk0 => CLOCK_27,
 		c0 => clock_36,
 		c1 => clock_18,
-		c2 => clock_11,
 		locked => pll_locked
 );
 
@@ -214,29 +210,28 @@ mist_io_inst : mist_io
 
 galaga : entity work.galaga
 	port map(
-		clock_18     => 	clock_18,
-		clock_11     => 	clock_11, 
-		reset        => 	reset,
-		video_r      => 	r,
-		video_g      => 	g,
-		video_b      => 	b,
+		clock_18     => clock_18,
+		reset        => reset,
+		video_r      => r,
+		video_g      => g,
+		video_b      => b,
 		video_blankn => blankn,
 		video_hs     => hsync,
 		video_vs     => vsync,
 		pix_ce       => pix_ce,
 
-		audio        => 	audio,
-		b_test       =>  status(7),--'1',--no Function at all
-		b_svce       =>  status(6),--'1',--no Function at all 
-		coin         =>  kbd_joy0(3) or status(1),
-		start1       =>  kbd_joy0(1) or status(2),
-		start2       =>  kbd_joy0(2) or status(3), 
-		left1        => 	joy0(2) or kbd_joy0(5),
-		right1       => 	joy0(3) or kbd_joy0(4),
-		fire1        => 	joy0(4) or kbd_joy0(0),
-		left2        =>  joy1(2) or kbd_joy0(5),
-		right2       =>  joy1(3) or kbd_joy0(4),
-		fire2        =>  joy1(4) or kbd_joy0(0)
+		audio        => audio,
+		b_test       => status(7),--'1',--no Function at all
+		b_svce       => status(6),--'1',--no Function at all 
+		coin         => kbd_joy0(3) or status(1),
+		start1       => kbd_joy0(1) or status(2),
+		start2       => kbd_joy0(2) or status(3), 
+		left1        => joy0(2) or kbd_joy0(5),
+		right1       => joy0(3) or kbd_joy0(4),
+		fire1        => joy0(4) or kbd_joy0(0),
+		left2        => joy1(2) or kbd_joy0(5),
+		right2       => joy1(3) or kbd_joy0(4),
+		fire2        => joy1(4) or kbd_joy0(0)
 );
 
 VGA_R_O <= r & r & r(2 downto 1) when blankn = '1' else "00000000";
@@ -262,5 +257,7 @@ u_keyboard : keyboard
 		ps2_kbd_data 	=> ps2Data,
 		joystick 		=> kbd_joy0
 );
+
+LED <= '1';
 
 end struct;

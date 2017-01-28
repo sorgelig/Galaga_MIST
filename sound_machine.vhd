@@ -38,11 +38,10 @@ architecture struct of sound_machine is
  signal snd_ram_0_do : std_logic_vector(3 downto 0);
  signal snd_ram_1_do : std_logic_vector(3 downto 0);
  
- signal snd_seq_addr : std_logic_vector(7 downto 0);
- signal snd_seq_do   : std_logic_vector(7 downto 0);
+ signal snd_seq_do   : std_logic_vector(3 downto 0);
 
  signal snd_samples_addr : std_logic_vector(7 downto 0);
- signal snd_samples_do   : std_logic_vector(7 downto 0);
+ signal snd_samples_do   : std_logic_vector(3 downto 0);
  
  signal sum      : std_logic_vector(4 downto 0) := (others => '0');
  signal sum_r    : std_logic_vector(4 downto 0) := (others => '0');
@@ -59,8 +58,6 @@ begin
 
 clock_18n <= not clock_18;
 
-snd_seq_addr <= '0' & not ram_0_we & hcnt(5 downto 0);
-
 snd_ram_addr <= cpu_addr when (ram_0_we = '1' or ram_1_we = '1') else hcnt(5 downto 2);
 snd_ram_di   <= cpu_do   when (ram_0_we = '1' or ram_1_we = '1') else sum_r(3 downto 0);
 
@@ -70,6 +67,16 @@ snd_ram_1_we <= ram_1_we;
 sum <= ('0' & snd_ram_0_do) + ('0' & snd_ram_1_do) + ("0000" & sum_r(4));
 
 process (clock_18)
+	function mul4x4(arg1, arg2: std_logic_vector(3 downto 0)) return std_logic_vector is
+		variable rval: std_logic_vector(9 downto 0);
+	begin
+		rval := "0000000000";
+		if arg2(3) = '1' then rval := rval + (arg1 & "000"); end if;
+		if arg2(2) = '1' then rval := rval + (arg1 & "00"); end if;
+		if arg2(1) = '1' then rval := rval + (arg1 & "0"); end if;
+		if arg2(0) = '1' then rval := rval + arg1; end if;
+		return rval;
+	end mul4x4;
 begin
 	if rising_edge(clock_18) then
 		if ena = '1' then
@@ -98,9 +105,9 @@ begin
 				end if;
 			end if;
 	
-			audio <= ("00" & samples_ch0) * volume_ch0 +
-						("00" & samples_ch1) * volume_ch1 +
-						("00" & samples_ch2) * volume_ch2;
+			audio <= mul4x4(samples_ch0, volume_ch0) +
+						mul4x4(samples_ch1, volume_ch1) +
+						mul4x4(samples_ch2, volume_ch2);
 		end if;
 	end if;
 end process;
@@ -139,7 +146,7 @@ port map(
 sound_seq : entity work.sound_seq
 port map(
  clk  => clock_18n,
- addr => snd_seq_addr,
+ addr => not ram_0_we & hcnt(5 downto 0),
  data => snd_seq_do
 );
 

@@ -5,29 +5,29 @@ entity sound_samples is
 port (
 	clk  : in  std_logic;
 	addr : in  std_logic_vector(7 downto 0);
-	data : out std_logic_vector(7 downto 0)
+	data : out std_logic_vector(3 downto 0)
 );
 end entity;
 
 architecture prom of sound_samples is
-	type rom is array(0 to  255) of std_logic_vector(7 downto 0);
+	type rom is array(0 to  255) of std_logic_vector(3 downto 0);
 	signal rom_data: rom := (
-		X"07",X"09",X"0A",X"0B",X"0C",X"0D",X"0D",X"0E",X"0E",X"0E",X"0D",X"0D",X"0C",X"0B",X"0A",X"09",
-		X"07",X"05",X"04",X"03",X"02",X"01",X"01",X"00",X"00",X"00",X"01",X"01",X"02",X"03",X"04",X"05",
-		X"07",X"09",X"0A",X"0B",X"07",X"0D",X"0D",X"07",X"0E",X"07",X"0D",X"0D",X"07",X"0B",X"0A",X"09",
-		X"07",X"05",X"07",X"03",X"07",X"01",X"07",X"00",X"07",X"00",X"07",X"01",X"07",X"03",X"07",X"05",
-		X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",X"0E",
-		X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",X"00",
-		X"0B",X"0D",X"0E",X"0D",X"0C",X"0A",X"08",X"08",X"08",X"0A",X"0C",X"0D",X"0E",X"0D",X"0B",X"08",
-		X"04",X"02",X"01",X"02",X"03",X"05",X"07",X"07",X"07",X"05",X"03",X"02",X"01",X"02",X"04",X"07",
-		X"07",X"0A",X"0C",X"0D",X"0E",X"0D",X"0C",X"0A",X"07",X"04",X"02",X"01",X"00",X"01",X"02",X"04",
-		X"07",X"0B",X"0D",X"0E",X"0D",X"0B",X"07",X"03",X"01",X"00",X"01",X"03",X"07",X"0E",X"07",X"00",
-		X"07",X"0E",X"0C",X"09",X"0C",X"0E",X"0A",X"07",X"0C",X"0F",X"0D",X"08",X"0A",X"0B",X"07",X"02",
-		X"08",X"0D",X"09",X"04",X"05",X"07",X"02",X"00",X"03",X"08",X"05",X"01",X"03",X"06",X"03",X"01",
-		X"07",X"08",X"0A",X"0C",X"0E",X"0D",X"0C",X"0C",X"0B",X"0A",X"08",X"07",X"05",X"06",X"07",X"08",
-		X"08",X"09",X"0A",X"0B",X"09",X"08",X"06",X"05",X"04",X"04",X"03",X"02",X"04",X"06",X"08",X"09",
-		X"0A",X"0C",X"0C",X"0A",X"07",X"07",X"08",X"0B",X"0D",X"0E",X"0D",X"0A",X"06",X"05",X"05",X"07",
-		X"09",X"09",X"08",X"04",X"01",X"00",X"01",X"03",X"06",X"07",X"07",X"04",X"02",X"02",X"04",X"07");
+		X"7",X"9",X"A",X"B",X"C",X"D",X"D",X"E",X"E",X"E",X"D",X"D",X"C",X"B",X"A",X"9",
+		X"7",X"5",X"4",X"3",X"2",X"1",X"1",X"0",X"0",X"0",X"1",X"1",X"2",X"3",X"4",X"5",
+		X"7",X"9",X"A",X"B",X"7",X"D",X"D",X"7",X"E",X"7",X"D",X"D",X"7",X"B",X"A",X"9",
+		X"7",X"5",X"7",X"3",X"7",X"1",X"7",X"0",X"7",X"0",X"7",X"1",X"7",X"3",X"7",X"5",
+		X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",X"E",
+		X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",X"0",
+		X"B",X"D",X"E",X"D",X"C",X"A",X"8",X"8",X"8",X"A",X"C",X"D",X"E",X"D",X"B",X"8",
+		X"4",X"2",X"1",X"2",X"3",X"5",X"7",X"7",X"7",X"5",X"3",X"2",X"1",X"2",X"4",X"7",
+		X"7",X"A",X"C",X"D",X"E",X"D",X"C",X"A",X"7",X"4",X"2",X"1",X"0",X"1",X"2",X"4",
+		X"7",X"B",X"D",X"E",X"D",X"B",X"7",X"3",X"1",X"0",X"1",X"3",X"7",X"E",X"7",X"0",
+		X"7",X"E",X"C",X"9",X"C",X"E",X"A",X"7",X"C",X"F",X"D",X"8",X"A",X"B",X"7",X"2",
+		X"8",X"D",X"9",X"4",X"5",X"7",X"2",X"0",X"3",X"8",X"5",X"1",X"3",X"6",X"3",X"1",
+		X"7",X"8",X"A",X"C",X"E",X"D",X"C",X"C",X"B",X"A",X"8",X"7",X"5",X"6",X"7",X"8",
+		X"8",X"9",X"A",X"B",X"9",X"8",X"6",X"5",X"4",X"4",X"3",X"2",X"4",X"6",X"8",X"9",
+		X"A",X"C",X"C",X"A",X"7",X"7",X"8",X"B",X"D",X"E",X"D",X"A",X"6",X"5",X"5",X"7",
+		X"9",X"9",X"8",X"4",X"1",X"0",X"1",X"3",X"6",X"7",X"7",X"4",X"2",X"2",X"4",X"7");
 begin
 process(clk)
 begin

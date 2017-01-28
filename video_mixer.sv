@@ -1,7 +1,10 @@
-`timescale 1ns / 1ps
-
+//
+// Copyright (c) 2017 Sorgelig
+//
 // Core should provide as much color resolution as possible with normalized 0-255 range
 // this module will reduce color resolution to 6 bits only at final stage.
+
+`timescale 1ns / 1ps
 
 module video_mixer
 (

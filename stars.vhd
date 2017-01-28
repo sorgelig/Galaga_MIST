@@ -45,7 +45,7 @@ end entity;
 
 architecture stars_table of stars is
 
-type table0 is array(0 to  119) of std_logic_vector(15 downto 0);
+type table0 is array(0 to 127) of std_logic_vector(15 downto 0);
 signal data0 : table0 := (
 X"8006",  -- line 0x06 
 X"3584",  -- one star at 0x84, color is 0x35
@@ -166,9 +166,18 @@ X"80F7",
 X"2B4E",
 X"80FF",
 X"2AFA",
-X"C000");
+X"C000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000"
+);
 
-type table1 is array(0 to  118) of std_logic_vector(15 downto 0);
+type table1 is array(0 to  127) of std_logic_vector(15 downto 0);
 signal data1 : table1 := (
 X"8004",
 X"3DFD",
@@ -288,9 +297,19 @@ X"80FB",
 X"3338",
 X"80FC",
 X"2727",
-X"C000");
+X"C000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000"
+);
 
-type table2 is array(0 to  122) of std_logic_vector(15 downto 0);
+type table2 is array(0 to  127) of std_logic_vector(15 downto 0);
 signal data2 : table2 := (
 X"8006",
 X"19F9",
@@ -414,9 +433,15 @@ X"80F9",
 X"2268",
 X"80FF",
 X"243E",
-X"C000");
+X"C000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000"
+);
 
-type table3 is array(0 to  122) of std_logic_vector(15 downto 0);
+type table3 is array(0 to  127) of std_logic_vector(15 downto 0);
 signal data3 : table3 := (
 X"8010",
 X"3470",
@@ -540,7 +565,13 @@ X"80F9",
 X"1DDD",
 X"80FA",
 X"132B",
-X"C000");
+X"C000",
+X"0000",
+X"0000",
+X"0000",
+X"0000",
+X"0000"
+);
 
 begin
 process(clk)

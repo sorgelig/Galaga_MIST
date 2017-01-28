@@ -92,7 +92,6 @@ use ieee.numeric_std.all;
 entity galaga is
 port(
  clock_18       : in std_logic;
- clock_11       : in std_logic;
  reset          : in std_logic;
  video_r        : out std_logic_vector(2 downto 0);
  video_g        : out std_logic_vector(2 downto 0);
@@ -211,7 +210,7 @@ architecture struct of galaga is
  signal bggraphx_addr  : std_logic_vector(11 downto 0);
  signal bggraphx_do    : std_logic_vector( 7 downto 0);
  signal bgpalette_addr : std_logic_vector( 7 downto 0);
- signal bgpalette_do   : std_logic_vector( 7 downto 0); 
+ signal bgpalette_do   : std_logic_vector( 3 downto 0); 
  signal bgbits         : std_logic_vector( 3 downto 0);
 
  signal rgb_palette_addr : std_logic_vector( 4 downto 0);
@@ -232,7 +231,7 @@ architecture struct of galaga is
  signal spgraphx_addr  : std_logic_vector(12 downto 0);
  signal spgraphx_do    : std_logic_vector(7 downto 0);
  signal sppalette_addr : std_logic_vector(7 downto 0);
- signal sppalette_do   : std_logic_vector(7 downto 0); 
+ signal sppalette_do   : std_logic_vector(3 downto 0); 
  signal spbits_wr      : std_logic_vector(3 downto 0);
  signal spbits_rd      : std_logic_vector(3 downto 0);
  signal spflip_V ,spflip_H  : std_logic;
@@ -437,7 +436,7 @@ sppalette_addr <= sptile_color(5 downto 0) &
 									spgraphx_do(to_integer(unsigned('1' & ((not sphcnt(1 downto 0)) xor spflip_2H )))) &
 									spgraphx_do(to_integer(unsigned('0' & ((not sphcnt(1 downto 0)) xor spflip_2H )))); 
 
-spbits_wr <= 	sppalette_do(3 downto 0);
+spbits_wr <= 	sppalette_do;
 
 --- BACKGROUND TILES MACHINE ---
 -----------------------_--------
@@ -478,7 +477,7 @@ bgpalette_addr <= bgtile_color_r(5 downto 0) &
 									bggraphx_do(to_integer(unsigned('1' & (hcnt(1 downto 0)) xor (flip_h & flip_h)))) &
 									bggraphx_do(to_integer(unsigned('0' & (hcnt(1 downto 0)) xor (flip_h & flip_h)))); 
 
-bgbits <= bgpalette_do(3 downto 0);
+bgbits <= bgpalette_do;
 
 --- STARS MACHINE --- 
 ---------------------
