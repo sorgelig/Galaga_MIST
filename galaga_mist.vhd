@@ -147,7 +147,7 @@ end component;
 begin
 reset <= status(0) or status(5) or buttons(1) or not pll_locked; 
 
-clk_11_18 : entity work.pll50_to_11_and_18
+pll : entity work.pll
 port map(
  inclk0 => CLOCK_27,
  c0 => clock_14k,
