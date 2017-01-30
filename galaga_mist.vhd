@@ -127,7 +127,7 @@ architecture struct of galaga_mist is
 
 	component video_mixer
 		port (
-			clk_sys, pix_ce : in std_logic;
+			clk_sys, ce_pix : in std_logic;
 			SPI_SCK, SPI_SS3, SPI_DI : in std_logic;
 			scanlines : in std_logic_vector(1 downto 0);
 			scandoubler_disable, ypbpr, ypbpr_full : in std_logic;
@@ -165,7 +165,7 @@ pll : entity work.pll
 vmixer : video_mixer
 	port map (
 		clk_sys => clock_72,
-		pix_ce => pix_ce,
+		ce_pix  => pix_ce,
 
 		SPI_SCK => SPI_SCK, 
 		SPI_SS3 => SPI_SS3,

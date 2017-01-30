@@ -8,9 +8,12 @@
 
 module video_mixer
 (
-	// system interface
+	// master clock
+	// it should be multiple by (ce_pix*2) and higher at least 4 times.
 	input        clk_sys,
-	input        pix_ce,
+	
+	// Pixel clock or clock_enable (both are accepted).
+	input        ce_pix,
 
 	// OSD SPI interface
 	input        SPI_SCK,
@@ -52,27 +55,6 @@ parameter OSD_COLOR    = 3'd4;
 
 wire [7:0] R_sd, G_sd, B_sd;
 wire hs_sd, vs_sd;
-
-reg ce_x1, ce_x2;
-always @(negedge clk_sys) begin
-	reg old_ce;
-	reg [7:0] cnt   = 0;
-	reg [7:0] pixsz = 0;
-	old_ce <= pix_ce;
-
-	if(~&cnt) cnt <= cnt + 1'd1;
-
-	ce_x2 <= 0;
-	ce_x1 <= 0;
-	if(~old_ce & pix_ce) begin
-		pixsz <= {1'b0, cnt[7:1]};
-		ce_x1 <= 1;
-		ce_x2 <= 1;
-		cnt   <= 0;
-	end
-	
-	if(cnt == pixsz) ce_x2 <= 1;
-end
 
 scandoubler scandoubler
 (
