@@ -58,7 +58,7 @@ port(
 end galaga_mist;
 
 architecture struct of galaga_mist is
-	signal clock_36  		: std_logic;
+	signal clock_72  		: std_logic;
 	signal clock_18  		: std_logic;
 	signal pll_locked  	: std_logic;
 	signal r         		: std_logic_vector(2 downto 0);
@@ -157,14 +157,14 @@ reset <= status(0) or status(5) or buttons(1) or not pll_locked;
 pll : entity work.pll
 	port map(
 		inclk0 => CLOCK_27,
-		c0 => clock_36,
+		c0 => clock_72,
 		c1 => clock_18,
 		locked => pll_locked
 );
 
 vmixer : video_mixer
 	port map (
-		clk_sys => clock_36,
+		clk_sys => clock_72,
 		pix_ce => pix_ce,
 
 		SPI_SCK => SPI_SCK, 

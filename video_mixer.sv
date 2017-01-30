@@ -10,7 +10,7 @@ module video_mixer
 (
 	// system interface
 	input        clk_sys,
-	input        pix_ce, // pix ce
+	input        pix_ce,
 
 	// OSD SPI interface
 	input        SPI_SCK,
@@ -140,8 +140,6 @@ wire [7:0] red, green, blue;
 osd #(OSD_X_OFFSET, OSD_Y_OFFSET, OSD_COLOR) osd
 (
 	.*,
-	.ce_pix(scandoubler_disable ? ce_x1 : ce_x2),
-	.doublescan(~scandoubler_disable),
 
 	.R_in(r_out),
 	.G_in(g_out),

@@ -5,8 +5,6 @@ module osd (
 	// OSDs pixel clock, should be synchronous to cores pixel clock to
 	// avoid jitter.
 	input        clk_sys,
-	input        ce_pix,
-	input        doublescan,
 
 	// SPI interface
 	input        SPI_SCK,
@@ -92,6 +90,29 @@ reg  [9:0] v_cnt;
 reg  [9:0] vs_low, vs_high;
 wire       vs_pol = vs_high < vs_low;
 wire [9:0] dsp_height = vs_pol ? vs_low : vs_high;
+
+wire doublescan = (dsp_height>350); 
+
+reg ce_pix;
+always @(negedge clk_sys) begin
+	integer cnt = 0;
+	integer pixsz, pixcnt;
+	reg hs;
+
+	cnt <= cnt + 1;
+	hs <= HSync;
+
+	pixcnt <= pixcnt + 1;
+	if(pixcnt == pixsz) pixcnt <= 0;
+	ce_pix <= !pixcnt;
+
+	if(hs && ~HSync) begin
+		cnt    <= 0;
+		pixsz  <= (cnt >> 9) - 1;
+		pixcnt <= 0;
+		ce_pix <= 1;
+	end
+end
 
 always @(posedge clk_sys) begin
 	reg hsD, hsD2;
