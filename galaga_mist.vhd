@@ -71,6 +71,8 @@ architecture struct of galaga_mist is
 	signal audio_pwm 		: std_logic; 
 	signal audio        	: std_logic_vector(9 downto 0);
 	signal reset        	: std_logic;
+	signal scanlines		: std_logic_vector(1 downto 0);
+	signal hq2x    		: std_logic;
 
 	-- User IO
 	signal buttons    	: std_logic_vector(1 downto 0);
@@ -92,7 +94,7 @@ architecture struct of galaga_mist is
  
 
 	constant CONF_STR : string := 
-		"Galaga;;T1,Add Coin       (ESC);T2,Player 1 Start (1);T3,Player 2 Start (2);O89,Scanlines,OFF,25%,50%,75%;T5,Reset;";
+		"Galaga;;T1,Add Coin       (ESC);T2,Player 1 Start (1);T3,Player 2 Start (2);O89,Video Scale,Simple,HQ2x,CRT 25%,CRT 50%;T5,Reset;";
 
 	function to_slv(s: string) return std_logic_vector is
 		constant ss: string(1 to s'length) := s;
@@ -126,14 +128,15 @@ architecture struct of galaga_mist is
 	end component mist_io;
 
 	component video_mixer
+		generic ( LINE_LENGTH : integer := 384 );
 		port (
 			clk_sys, ce_pix : in std_logic;
 			SPI_SCK, SPI_SS3, SPI_DI : in std_logic;
 			scanlines : in std_logic_vector(1 downto 0);
-			scandoubler_disable, ypbpr, ypbpr_full : in std_logic;
+			scandoubler_disable, hq2x, ypbpr, ypbpr_full : in std_logic;
 
 			R, G, B : in std_logic_vector(7 downto 0);
-			HSync, VSync : in std_logic;
+			HSync, VSync, line_start : in std_logic;
 
 			VGA_R,VGA_G, VGA_B : out std_logic_vector(5 downto 0);
 			VGA_VS, VGA_HS : out std_logic
@@ -162,6 +165,10 @@ pll : entity work.pll
 		locked => pll_locked
 );
 
+scanlines(1) <= '1' when status(9 downto 8) = "11" and scandoubler_disable = '0' else '0';
+scanlines(0) <= '1' when status(9 downto 8) = "10" and scandoubler_disable = '0' else '0';
+hq2x         <= '1' when status(9 downto 8) = "01" else '0';
+
 vmixer : video_mixer
 	port map (
 		clk_sys => clock_72,
@@ -171,8 +178,9 @@ vmixer : video_mixer
 		SPI_SS3 => SPI_SS3,
 		SPI_DI => SPI_DI,
 
-		scanlines => status(9 downto 8),
+		scanlines => scanlines,
 		scandoubler_disable => scandoubler_disable,
+		hq2x => hq2x,
 		ypbpr => ypbpr,
 		ypbpr_full => '1',
 
@@ -181,6 +189,7 @@ vmixer : video_mixer
 		B => VGA_B_O,
 		HSync => hsync,
 		VSync => vsync,
+		line_start => '0',
 
 		VGA_R => VGA_R,
 		VGA_G => VGA_G,

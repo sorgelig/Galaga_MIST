@@ -193,6 +193,7 @@ set_global_assignment -name VHDL_FILE gen_video.vhd
 set_global_assignment -name VHDL_FILE gen_ram.vhd
 set_global_assignment -name VHDL_FILE dac.vhd
 set_global_assignment -name VERILOG_FILE mist_io.v
+set_global_assignment -name SYSTEMVERILOG_FILE hq2x.sv
 set_global_assignment -name SYSTEMVERILOG_FILE video_mixer.sv
 set_global_assignment -name VERILOG_FILE scandoubler.v
 set_global_assignment -name VERILOG_FILE osd.v

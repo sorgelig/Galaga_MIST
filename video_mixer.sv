@@ -1,15 +1,18 @@
 //
+//
 // Copyright (c) 2017 Sorgelig
 //
-// Core should provide as much color resolution as possible with normalized 0-255 range
-// this module will reduce color resolution to 6 bits only at final stage.
+// This program is GPL Licensed. See COPYING for the full license.
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 `timescale 1ns / 1ps
 
 module video_mixer
 (
 	// master clock
-	// it should be multiple by (ce_pix*2) and higher at least 4 times.
+	// it should be multiple by (ce_pix*4).
 	input        clk_sys,
 	
 	// Pixel clock or clock_enable (both are accepted).
@@ -25,6 +28,7 @@ module video_mixer
 
 	// 0 = HVSync 31KHz, 1 = CSync 15KHz
 	input        scandoubler_disable,
+	input        hq2x,
 
 	// YPbPr always uses composite sync
 	input        ypbpr,
@@ -41,6 +45,15 @@ module video_mixer
 	input        HSync,
 	input        VSync,
 
+	// Falling of this signal means start of informative part of line.
+	// It can be horizontal blank signal.
+	// This signal can be used to reduce amount of required FPGA RAM for HQ2x scan doubler
+	// If FPGA RAM is not an issue, then simply set it to 0 for whole line processing.
+	// Keep in mind: due to algo first and last pixels of line should be black to avoid side artefacts.
+	// Thus, if blank signal is used to reduce the line, make sure to feed at least one black (or paper) pixel 
+	// before first informative pixel.
+	input        line_start,
+
 	// MiST video output signals
 	output [5:0] VGA_R,
 	output [5:0] VGA_G,
@@ -53,10 +66,15 @@ parameter OSD_X_OFFSET = 10'd0;
 parameter OSD_Y_OFFSET = 10'd0;
 parameter OSD_COLOR    = 3'd4;
 
+// Length of  display line in pixels
+// Usually it's length from HSync to HSync.
+// May be less if line_start is used.
+parameter LINE_LENGTH  = 768;
+
 wire [7:0] R_sd, G_sd, B_sd;
 wire hs_sd, vs_sd;
 
-scandoubler scandoubler
+scandoubler #(.LENGTH(LINE_LENGTH)) scandoubler
 (
 	.*,
 	.hs_in(HSync),
