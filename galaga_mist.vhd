@@ -88,13 +88,13 @@ architecture struct of galaga_mist is
 	signal ps2Data    	: std_logic;
 	signal ps2_scancode 	: std_logic_vector(7 downto 0);
 
-	signal VGA_R_O  		: std_logic_vector(7 downto 0);
-	signal VGA_G_O  		: std_logic_vector(7 downto 0);
-	signal VGA_B_O  		: std_logic_vector(7 downto 0);
+	signal VGA_R_O  		: std_logic_vector(2 downto 0);
+	signal VGA_G_O  		: std_logic_vector(2 downto 0);
+	signal VGA_B_O  		: std_logic_vector(2 downto 0);
  
 
 	constant CONF_STR : string := 
-		"Galaga;;T1,Add Coin       (ESC);T2,Player 1 Start (1);T3,Player 2 Start (2);O89,Video Scale,Simple,HQ2x,CRT 25%,CRT 50%;T5,Reset;";
+		"Galaga;;T1,Add Coin       (ESC);T2,Player 1 Start (1);T3,Player 2 Start (2);O89,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%;T5,Reset;";
 
 	function to_slv(s: string) return std_logic_vector is
 		constant ss: string(1 to s'length) := s;
@@ -128,15 +128,15 @@ architecture struct of galaga_mist is
 	end component mist_io;
 
 	component video_mixer
-		generic ( LINE_LENGTH : integer := 384 );
+		generic ( LINE_LENGTH : integer := 384; HALF_DEPTH : integer := 1 );
 		port (
-			clk_sys, ce_pix : in std_logic;
+			clk_sys, ce_pix, ce_pix_actual : in std_logic;
 			SPI_SCK, SPI_SS3, SPI_DI : in std_logic;
 			scanlines : in std_logic_vector(1 downto 0);
 			scandoubler_disable, hq2x, ypbpr, ypbpr_full : in std_logic;
 
-			R, G, B : in std_logic_vector(7 downto 0);
-			HSync, VSync, line_start : in std_logic;
+			R, G, B : in std_logic_vector(2 downto 0);
+			HSync, VSync, line_start, mono : in std_logic;
 
 			VGA_R,VGA_G, VGA_B : out std_logic_vector(5 downto 0);
 			VGA_VS, VGA_HS : out std_logic
@@ -173,6 +173,7 @@ vmixer : video_mixer
 	port map (
 		clk_sys => clock_72,
 		ce_pix  => pix_ce,
+		ce_pix_actual => pix_ce,
 
 		SPI_SCK => SPI_SCK, 
 		SPI_SS3 => SPI_SS3,
@@ -190,6 +191,7 @@ vmixer : video_mixer
 		HSync => hsync,
 		VSync => vsync,
 		line_start => '0',
+		mono => '0',
 
 		VGA_R => VGA_R,
 		VGA_G => VGA_G,
@@ -243,9 +245,9 @@ galaga : entity work.galaga
 		fire2        => joy1(4) or kbd_joy0(0)
 );
 
-VGA_R_O <= r & r & r(2 downto 1) when blankn = '1' else "00000000";
-VGA_G_O <= g & g & g(2 downto 1) when blankn = '1' else "00000000";
-VGA_B_O <= b & b & b & b         when blankn = '1' else "00000000";
+VGA_R_O <= r        when blankn = '1' else "000";
+VGA_G_O <= g        when blankn = '1' else "000";
+VGA_B_O <= b & b(1) when blankn = '1' else "000";
 
 u_dac : entity work.dac
 	port  map(
